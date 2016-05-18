@@ -15,11 +15,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="8dp"
-        app:bl_arrowDirection="left"
-        app:bl_arrowHeight="8dp"
-        app:bl_arrowPosition="16dp"
-        app:bl_arrowWidth="8dp"
-        app:bl_strokeWidth="1dp">
+        app:arrowDirection="left"
+        app:arrowHeight="8dp"
+        app:arrowPosition="16dp"
+        app:arrowWidth="8dp"
+        app:strokeWidth="1dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -36,12 +36,12 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:padding="8dp"
-        app:bl_arrowDirection="top"
-        app:bl_arrowHeight="8dp"
-        app:bl_arrowPosition="12dp"
-        app:bl_arrowWidth="8dp"
-        app:bl_bubbleColor="@android:color/holo_blue_light"
-        app:bl_cornersRadius="8dp">
+        app:arrowDirection="top"
+        app:arrowHeight="8dp"
+        app:arrowPosition="12dp"
+        app:arrowWidth="8dp"
+        app:bubbleColor="@android:color/holo_blue_light"
+        app:cornersRadius="8dp">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -71,12 +71,12 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:padding="8dp"
-        app:bl_arrowDirection="right"
-        app:bl_arrowHeight="8dp"
-        app:bl_arrowPosition="16dp"
-        app:bl_arrowWidth="8dp"
-        app:bl_cornersRadius="6dp"
-        app:bl_strokeWidth="1dp">
+        app:arrowDirection="right"
+        app:arrowHeight="8dp"
+        app:arrowPosition="16dp"
+        app:arrowWidth="8dp"
+        app:cornersRadius="6dp"
+        app:strokeWidth="1dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -93,12 +93,12 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:padding="8dp"
-        app:bl_arrowDirection="bottom"
-        app:bl_arrowHeight="8dp"
-        app:bl_arrowPosition="16dp"
-        app:bl_arrowWidth="8dp"
-        app:bl_bubbleColor="@android:color/holo_green_light"
-        app:bl_cornersRadius="6dp">
+        app:arrowDirection="bottom"
+        app:arrowHeight="8dp"
+        app:arrowPosition="16dp"
+        app:arrowWidth="8dp"
+        app:bubbleColor="@android:color/holo_green_light"
+        app:cornersRadius="6dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -109,7 +109,6 @@
             android:textColor="@android:color/white" />
 
     </com.daasuu.bl.BubbleLayout>
-
 
     <Button
         android:id="@+id/btn_popup"

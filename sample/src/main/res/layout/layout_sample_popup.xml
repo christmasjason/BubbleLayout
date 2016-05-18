@@ -4,12 +4,12 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:padding="@dimen/activity_horizontal_margin"
-    app:bl_arrowDirection="top"
-    app:bl_arrowHeight="12dp"
-    app:bl_arrowPosition="16dp"
-    app:bl_arrowWidth="8dp"
-    app:bl_bubbleColor="@color/colorAccent"
-    app:bl_cornersRadius="2dp">
+    app:arrowDirection="top"
+    app:arrowHeight="12dp"
+    app:arrowPosition="16dp"
+    app:arrowWidth="8dp"
+    app:bubbleColor="@color/colorAccent"
+    app:cornersRadius="2dp">
 
     <TextView
         android:layout_width="wrap_content"

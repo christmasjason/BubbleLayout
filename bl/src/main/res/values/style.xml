@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="BubbleLayout">
-        <attr name="bl_arrowWidth" format="dimension|reference" />
-        <attr name="bl_cornersRadius" format="dimension|reference" />
-        <attr name="bl_arrowHeight" format="dimension|reference" />
-        <attr name="bl_arrowPosition" format="dimension|reference" />
-        <attr name="bl_bubbleColor" format="color|reference" />
-        <attr name="bl_strokeWidth" format="dimension|reference" />
-        <attr name="bl_strokeColor" format="color|reference" />
+        <attr name="arrowWidth" format="dimension|reference" />
+        <attr name="cornersRadius" format="dimension|reference" />
+        <attr name="arrowHeight" format="dimension|reference" />
+        <attr name="arrowPosition" format="dimension|reference" />
+        <attr name="bubbleColor" format="color|reference" />
+        <attr name="strokeWidth" format="dimension|reference" />
+        <attr name="strokeColor" format="color|reference" />
 
-        <attr name="bl_arrowDirection" format="enum">
+        <attr name="arrowDirection" format="enum">
             <enum name="left" value="0" />
-            <enum name="right" value="1" />
-            <enum name="top" value="2" />
+            <enum name="top" value="1" />
+            <enum name="right" value="2" />
             <enum name="bottom" value="3" />
         </attr>
     </declare-styleable>

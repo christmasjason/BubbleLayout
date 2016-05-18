@@ -5,330 +5,297 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.IntDef;
 
-/**
- * Created by sudamasayuki on 16/03/27.
- */
-class Bubble extends Drawable {
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-    private RectF mRect;
-    private Path mPath = new Path();
-    private Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private Path mStrokePath;
-    private Paint mStrokePaint;
-    private float mArrowWidth;
-    private float mCornersRadius;
-    private float mArrowHeight;
-    private float mArrowPosition;
-    private float mStrokeWidth;
+public class Bubble extends Drawable {
 
-    public Bubble(RectF rect, float arrowWidth, float cornersRadius, float arrowHeight, float arrowPosition, float strokeWidth, int strokeColor, int bubbleColor, ArrowDirection arrowDirection) {
-        this.mRect = rect;
+  public static final int LEFT = 0;
+  public static final int TOP = 1;
+  public static final int RIGHT = 2;
+  public static final int BOTTOM = 3;
 
-        this.mArrowWidth = arrowWidth;
-        this.mCornersRadius = cornersRadius;
-        this.mArrowHeight = arrowHeight;
-        this.mArrowPosition = arrowPosition;
-        this.mStrokeWidth = strokeWidth;
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef({LEFT, TOP, RIGHT, BOTTOM})
+  public @interface ArrowDirection {
+  }
 
-        mPaint.setColor(bubbleColor);
+  private RectF bubbleRect;
 
-        if (strokeWidth > 0) {
-            mStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            mStrokePaint.setColor(strokeColor);
-            mStrokePath = new Path();
+  private Path solidPath;
+  private Path strokePath;
 
-            initPath(arrowDirection, mPath, strokeWidth);
-            initPath(arrowDirection, mStrokePath, 0);
+  private Paint solidPaint;
+  private Paint strokePaint;
+
+  private float arrowWidth;
+  private float cornersRadius;
+  private float arrowHeight;
+  private float arrowPosition;
+  private float strokeWidth;
+
+  public Bubble(RectF rect, float arrowWidth, float cornersRadius, float arrowHeight,
+                float arrowPosition, float strokeWidth, int strokeColor, int bubbleColor,
+                @ArrowDirection int arrowDirection) {
+    this.bubbleRect = rect;
+
+    this.arrowWidth = arrowWidth;
+    this.cornersRadius = cornersRadius;
+    this.arrowHeight = arrowHeight;
+    this.arrowPosition = arrowPosition;
+    this.strokeWidth = strokeWidth;
+
+    solidPath = new Path();
+    solidPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    solidPaint.setColor(bubbleColor);
+
+    if (strokeWidth > 0) {
+      strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+      strokePaint.setColor(strokeColor);
+      strokePath = new Path();
+
+      initPath(arrowDirection, strokePath, 0);
+    }
+    initPath(arrowDirection, solidPath, strokeWidth);
+  }
+
+  @Override
+  public void draw(Canvas canvas) {
+    if (strokeWidth > 0) {
+      canvas.drawPath(strokePath, strokePaint);
+    }
+    canvas.drawPath(solidPath, solidPaint);
+  }
+
+  @Override
+  public int getOpacity() {
+    return PixelFormat.TRANSLUCENT;
+  }
+
+  @Override
+  public void setAlpha(int alpha) {
+    solidPaint.setAlpha(alpha);
+  }
+
+  @Override
+  public void setColorFilter(ColorFilter colorFilter) {
+    solidPaint.setColorFilter(colorFilter);
+  }
+
+  @Override
+  public int getIntrinsicWidth() {
+    return (int) bubbleRect.width();
+  }
+
+  @Override
+  public int getIntrinsicHeight() {
+    return (int) bubbleRect.height();
+  }
+
+  private void initPath(@ArrowDirection int arrowDirection, Path path, float strokeWidth) {
+    switch (arrowDirection) {
+      case LEFT:
+        if (cornersRadius <= 0 ||
+            (strokeWidth > 0 && strokeWidth > cornersRadius)) {
+          initLeftSquarePath(bubbleRect, path, strokeWidth);
         } else {
-            initPath(arrowDirection, mPath, 0);
+          initLeftRoundedPath(bubbleRect, path, strokeWidth);
         }
-    }
+        break;
 
-    @Override
-    protected void onBoundsChange(Rect bounds) {
-        super.onBoundsChange(bounds);
-    }
-
-    @Override
-    public void draw(Canvas canvas) {
-        if (mStrokeWidth > 0) {
-            canvas.drawPath(mStrokePath, mStrokePaint);
+      case TOP:
+        if (cornersRadius <= 0 ||
+            (strokeWidth > 0 && strokeWidth > cornersRadius)) {
+          initTopSquarePath(bubbleRect, path, strokeWidth);
+        } else {
+          initTopRoundedPath(bubbleRect, path, strokeWidth);
         }
-        canvas.drawPath(mPath, mPaint);
-    }
+        break;
 
-    @Override
-    public int getOpacity() {
-        return PixelFormat.TRANSLUCENT;
-    }
-
-    @Override
-    public void setAlpha(int alpha) {
-        mPaint.setAlpha(alpha);
-    }
-
-    @Override
-    public void setColorFilter(ColorFilter cf) {
-        mPaint.setColorFilter(cf);
-    }
-
-    @Override
-    public int getIntrinsicWidth() {
-        return (int) mRect.width();
-    }
-
-    @Override
-    public int getIntrinsicHeight() {
-        return (int) mRect.height();
-    }
-
-    private void initPath(ArrowDirection mArrowDirection, Path path, float strokeWidth) {
-        switch (mArrowDirection) {
-            case LEFT:
-                if (mCornersRadius <= 0) {
-                    initLeftSquarePath(mRect, path, strokeWidth);
-                    break;
-                }
-
-                if (strokeWidth > 0 && strokeWidth > mCornersRadius) {
-                    initLeftSquarePath(mRect, path, strokeWidth);
-                    break;
-                }
-
-                initLeftRoundedPath(mRect, path, strokeWidth);
-                break;
-            case TOP:
-                if (mCornersRadius <= 0) {
-                    initTopSquarePath(mRect, path, strokeWidth);
-                    break;
-                }
-
-                if (strokeWidth > 0 && strokeWidth > mCornersRadius) {
-                    initTopSquarePath(mRect, path, strokeWidth);
-                    break;
-                }
-
-                initTopRoundedPath(mRect, path, strokeWidth);
-
-                break;
-            case RIGHT:
-                if (mCornersRadius <= 0) {
-                    initRightSquarePath(mRect, path, strokeWidth);
-                    break;
-                }
-
-                if (strokeWidth > 0 && strokeWidth > mCornersRadius) {
-                    initRightSquarePath(mRect, path, strokeWidth);
-                    break;
-                }
-
-                initRightRoundedPath(mRect, path, strokeWidth);
-
-                break;
-            case BOTTOM:
-                if (mCornersRadius <= 0) {
-                    initBottomSquarePath(mRect, path, strokeWidth);
-                    break;
-                }
-
-                if (strokeWidth > 0 && strokeWidth > mCornersRadius) {
-                    initBottomSquarePath(mRect, path, strokeWidth);
-                    break;
-                }
-
-                initBottomRoundedPath(mRect, path, strokeWidth);
-                break;
+      case RIGHT:
+        if (cornersRadius <= 0 ||
+            (strokeWidth > 0 && strokeWidth > cornersRadius)) {
+          initRightSquarePath(bubbleRect, path, strokeWidth);
+        } else {
+          initRightRoundedPath(bubbleRect, path, strokeWidth);
         }
+        break;
+
+      case BOTTOM:
+        if (cornersRadius <= 0 &&
+            (strokeWidth > 0 && strokeWidth > cornersRadius)) {
+          initBottomSquarePath(bubbleRect, path, strokeWidth);
+        } else {
+          initBottomRoundedPath(bubbleRect, path, strokeWidth);
+        }
+        break;
     }
+  }
 
-    private void initLeftRoundedPath(RectF rect, Path path, float strokeWidth) {
+  private void initLeftRoundedPath(RectF rect, Path path, float strokeWidth) {
+    path.moveTo(arrowWidth + rect.left + cornersRadius + strokeWidth, rect.top + strokeWidth);
 
-        path.moveTo(mArrowWidth + rect.left + mCornersRadius + strokeWidth, rect.top + strokeWidth);
-        path.lineTo(rect.width() - mCornersRadius - strokeWidth, rect.top + strokeWidth);
-        path.arcTo(new RectF(rect.right - mCornersRadius, rect.top + strokeWidth, rect.right - strokeWidth,
-                mCornersRadius + rect.top), 270, 90);
+    path.lineTo(rect.width() - cornersRadius - strokeWidth, rect.top + strokeWidth);
+    path.arcTo(new RectF(rect.right - cornersRadius, rect.top + strokeWidth, rect.right - strokeWidth,
+        cornersRadius + rect.top), 270, 90);
 
-        path.lineTo(rect.right - strokeWidth, rect.bottom - mCornersRadius - strokeWidth);
-        path.arcTo(new RectF(rect.right - mCornersRadius, rect.bottom - mCornersRadius,
-                rect.right - strokeWidth, rect.bottom - strokeWidth), 0, 90);
+    path.lineTo(rect.right - strokeWidth, rect.bottom - cornersRadius - strokeWidth);
+    path.arcTo(new RectF(rect.right - cornersRadius, rect.bottom - cornersRadius,
+        rect.right - strokeWidth, rect.bottom - strokeWidth), 0, 90);
 
+    path.lineTo(rect.left + arrowWidth + cornersRadius + strokeWidth, rect.bottom - strokeWidth);
+    path.arcTo(new RectF(rect.left + arrowWidth + strokeWidth, rect.bottom - cornersRadius,
+        cornersRadius + rect.left + arrowWidth, rect.bottom - strokeWidth), 90, 90);
 
-        path.lineTo(rect.left + mArrowWidth + mCornersRadius + strokeWidth, rect.bottom - strokeWidth);
+    path.lineTo(rect.left + arrowWidth + strokeWidth, arrowHeight + arrowPosition - (strokeWidth / 2));
 
+    path.lineTo(rect.left + strokeWidth + strokeWidth, arrowPosition + arrowHeight / 2);
+    path.lineTo(rect.left + arrowWidth + strokeWidth, arrowPosition + (strokeWidth / 2));
 
-        path.arcTo(new RectF(rect.left + mArrowWidth + strokeWidth, rect.bottom - mCornersRadius,
-                mCornersRadius + rect.left + mArrowWidth, rect.bottom - strokeWidth), 90, 90);
+    path.lineTo(rect.left + arrowWidth + strokeWidth, rect.top + cornersRadius + strokeWidth);
+    path.arcTo(new RectF(rect.left + arrowWidth + strokeWidth, rect.top + strokeWidth, cornersRadius
+        + rect.left + arrowWidth, cornersRadius + rect.top), 180, 90);
 
-        path.lineTo(rect.left + mArrowWidth + strokeWidth, mArrowHeight + mArrowPosition - (strokeWidth / 2));
+    path.close();
+  }
 
-        path.lineTo(rect.left + strokeWidth + strokeWidth, mArrowPosition + mArrowHeight / 2);
+  private void initLeftSquarePath(RectF rect, Path path, float strokeWidth) {
+    path.moveTo(arrowWidth + rect.left + strokeWidth, rect.top + strokeWidth);
 
+    path.lineTo(rect.width() - strokeWidth, rect.top + strokeWidth);
+    path.lineTo(rect.right - strokeWidth, rect.bottom - strokeWidth);
+    path.lineTo(rect.left + arrowWidth + strokeWidth, rect.bottom - strokeWidth);
 
-        path.lineTo(rect.left + mArrowWidth + strokeWidth, mArrowPosition + (strokeWidth / 2));
+    path.lineTo(rect.left + arrowWidth + strokeWidth, arrowPosition + arrowHeight - (strokeWidth / 2));
+    path.lineTo(rect.left + strokeWidth + strokeWidth, arrowPosition + arrowHeight / 2);
+    path.lineTo(rect.left + arrowWidth + strokeWidth, arrowPosition + (strokeWidth / 2));
 
-        path.lineTo(rect.left + mArrowWidth + strokeWidth, rect.top + mCornersRadius + strokeWidth);
+    path.lineTo(rect.left + arrowWidth + strokeWidth, rect.top + strokeWidth);
+    path.close();
+  }
 
-        path.arcTo(new RectF(rect.left + mArrowWidth + strokeWidth, rect.top + strokeWidth, mCornersRadius
-                + rect.left + mArrowWidth, mCornersRadius + rect.top), 180, 90);
+  private void initTopRoundedPath(RectF rect, Path path, float strokeWidth) {
+    path.moveTo(rect.left + Math.min(arrowPosition, cornersRadius) + strokeWidth, rect.top + arrowHeight + strokeWidth);
 
-        path.close();
-    }
+    path.lineTo(rect.left + arrowPosition + (strokeWidth / 2), rect.top + arrowHeight + strokeWidth);
+    path.lineTo(rect.left + arrowWidth / 2 + arrowPosition, rect.top + strokeWidth + strokeWidth);
 
-    private void initLeftSquarePath(RectF rect, Path path, float strokeWidth) {
+    path.lineTo(rect.left + arrowWidth + arrowPosition - (strokeWidth / 2), rect.top + arrowHeight + strokeWidth);
+    path.lineTo(rect.right - cornersRadius - strokeWidth, rect.top + arrowHeight + strokeWidth);
 
-        path.moveTo(mArrowWidth + rect.left + strokeWidth, rect.top + strokeWidth);
-        path.lineTo(rect.width() - strokeWidth, rect.top + strokeWidth);
+    path.arcTo(new RectF(rect.right - cornersRadius,
+        rect.top + arrowHeight + strokeWidth, rect.right - strokeWidth, cornersRadius + rect.top + arrowHeight), 270, 90);
+    path.lineTo(rect.right - strokeWidth, rect.bottom - cornersRadius - strokeWidth);
 
-        path.lineTo(rect.right - strokeWidth, rect.bottom - strokeWidth);
+    path.arcTo(new RectF(rect.right - cornersRadius, rect.bottom - cornersRadius,
+        rect.right - strokeWidth, rect.bottom - strokeWidth), 0, 90);
+    path.lineTo(rect.left + cornersRadius + strokeWidth, rect.bottom - strokeWidth);
 
-        path.lineTo(rect.left + mArrowWidth + strokeWidth, rect.bottom - strokeWidth);
+    path.arcTo(new RectF(rect.left + strokeWidth, rect.bottom - cornersRadius,
+        cornersRadius + rect.left, rect.bottom - strokeWidth), 90, 90);
 
+    path.lineTo(rect.left + strokeWidth, rect.top + arrowHeight + cornersRadius + strokeWidth);
 
-        path.lineTo(rect.left + mArrowWidth + strokeWidth, mArrowHeight + mArrowPosition - (strokeWidth / 2));
-        path.lineTo(rect.left + strokeWidth + strokeWidth, mArrowPosition + mArrowHeight / 2);
-        path.lineTo(rect.left + mArrowWidth + strokeWidth, mArrowPosition + (strokeWidth / 2));
+    path.arcTo(new RectF(rect.left + strokeWidth, rect.top + arrowHeight + strokeWidth, cornersRadius
+        + rect.left, cornersRadius + rect.top + arrowHeight), 180, 90);
 
-        path.lineTo(rect.left + mArrowWidth + strokeWidth, rect.top + strokeWidth);
+    path.close();
+  }
 
+  private void initTopSquarePath(RectF rect, Path path, float strokeWidth) {
+    path.moveTo(rect.left + arrowPosition + strokeWidth, rect.top + arrowHeight + strokeWidth);
 
-        path.close();
-    }
+    path.lineTo(rect.left + arrowWidth / 2 + arrowPosition, rect.top + strokeWidth + strokeWidth);
+    path.lineTo(rect.left + arrowWidth + arrowPosition - (strokeWidth / 2), rect.top + arrowHeight + strokeWidth);
+    path.lineTo(rect.right - strokeWidth, rect.top + arrowHeight + strokeWidth);
 
+    path.lineTo(rect.right - strokeWidth, rect.bottom - strokeWidth);
+    path.lineTo(rect.left + strokeWidth, rect.bottom - strokeWidth);
+    path.lineTo(rect.left + strokeWidth, rect.top + arrowHeight + strokeWidth);
 
-    private void initTopRoundedPath(RectF rect, Path path, float strokeWidth) {
-        path.moveTo(rect.left + Math.min(mArrowPosition, mCornersRadius) + strokeWidth, rect.top + mArrowHeight + strokeWidth);
-        path.lineTo(rect.left + mArrowPosition + (strokeWidth / 2), rect.top + mArrowHeight + strokeWidth);
-        path.lineTo(rect.left + mArrowWidth / 2 + mArrowPosition, rect.top + strokeWidth + strokeWidth);
-        path.lineTo(rect.left + mArrowWidth + mArrowPosition - (strokeWidth / 2), rect.top + mArrowHeight + strokeWidth);
-        path.lineTo(rect.right - mCornersRadius - strokeWidth, rect.top + mArrowHeight + strokeWidth);
+    path.lineTo(rect.left + arrowPosition + strokeWidth, rect.top + arrowHeight + strokeWidth);
 
-        path.arcTo(new RectF(rect.right - mCornersRadius,
-                rect.top + mArrowHeight + strokeWidth, rect.right - strokeWidth, mCornersRadius + rect.top + mArrowHeight), 270, 90);
-        path.lineTo(rect.right - strokeWidth, rect.bottom - mCornersRadius - strokeWidth);
+    path.close();
+  }
 
-        path.arcTo(new RectF(rect.right - mCornersRadius, rect.bottom - mCornersRadius,
-                rect.right - strokeWidth, rect.bottom - strokeWidth), 0, 90);
-        path.lineTo(rect.left + mCornersRadius + strokeWidth, rect.bottom - strokeWidth);
+  private void initRightRoundedPath(RectF rect, Path path, float strokeWidth) {
+    path.moveTo(rect.left + cornersRadius + strokeWidth, rect.top + strokeWidth);
+    path.lineTo(rect.width() - cornersRadius - arrowWidth - strokeWidth, rect.top + strokeWidth);
+    path.arcTo(new RectF(rect.right - cornersRadius - arrowWidth,
+        rect.top + strokeWidth, rect.right - arrowWidth - strokeWidth, cornersRadius + rect.top), 270, 90);
 
-        path.arcTo(new RectF(rect.left + strokeWidth, rect.bottom - mCornersRadius,
-                mCornersRadius + rect.left, rect.bottom - strokeWidth), 90, 90);
+    path.lineTo(rect.right - arrowWidth - strokeWidth, arrowPosition + (strokeWidth / 2));
+    path.lineTo(rect.right - strokeWidth - strokeWidth, arrowPosition + arrowHeight / 2);
+    path.lineTo(rect.right - arrowWidth - strokeWidth, arrowPosition + arrowHeight - (strokeWidth / 2));
+    path.lineTo(rect.right - arrowWidth - strokeWidth, rect.bottom - cornersRadius - strokeWidth);
 
-        path.lineTo(rect.left + strokeWidth, rect.top + mArrowHeight + mCornersRadius + strokeWidth);
-
-        path.arcTo(new RectF(rect.left + strokeWidth, rect.top + mArrowHeight + strokeWidth, mCornersRadius
-                + rect.left, mCornersRadius + rect.top + mArrowHeight), 180, 90);
-
-        path.close();
-    }
-
-    private void initTopSquarePath(RectF rect, Path path, float strokeWidth) {
-        path.moveTo(rect.left + mArrowPosition + strokeWidth, rect.top + mArrowHeight + strokeWidth);
-
-        path.lineTo(rect.left + mArrowPosition + (strokeWidth / 2), rect.top + mArrowHeight + strokeWidth);
-        path.lineTo(rect.left + mArrowWidth / 2 + mArrowPosition, rect.top + strokeWidth + strokeWidth);
-        path.lineTo(rect.left + mArrowWidth + mArrowPosition - (strokeWidth / 2), rect.top + mArrowHeight + strokeWidth);
-        path.lineTo(rect.right - strokeWidth, rect.top + mArrowHeight + strokeWidth);
-
-        path.lineTo(rect.right - strokeWidth, rect.bottom - strokeWidth);
-
-        path.lineTo(rect.left + strokeWidth, rect.bottom - strokeWidth);
-
-
-        path.lineTo(rect.left + strokeWidth, rect.top + mArrowHeight + strokeWidth);
-
-        path.lineTo(rect.left + mArrowPosition + strokeWidth, rect.top + mArrowHeight + strokeWidth);
-
-
-        path.close();
-    }
-
-
-    private void initRightRoundedPath(RectF rect, Path path, float strokeWidth) {
-
-        path.moveTo(rect.left + mCornersRadius + strokeWidth, rect.top + strokeWidth);
-        path.lineTo(rect.width() - mCornersRadius - mArrowWidth - strokeWidth, rect.top + strokeWidth);
-        path.arcTo(new RectF(rect.right - mCornersRadius - mArrowWidth,
-                rect.top + strokeWidth, rect.right - mArrowWidth - strokeWidth, mCornersRadius + rect.top), 270, 90);
-
-        path.lineTo(rect.right - mArrowWidth - strokeWidth, mArrowPosition + (strokeWidth / 2));
-        path.lineTo(rect.right - strokeWidth - strokeWidth, mArrowPosition + mArrowHeight / 2);
-        path.lineTo(rect.right - mArrowWidth - strokeWidth, mArrowPosition + mArrowHeight - (strokeWidth / 2));
-        path.lineTo(rect.right - mArrowWidth - strokeWidth, rect.bottom - mCornersRadius - strokeWidth);
-
-        path.arcTo(new RectF(rect.right - mCornersRadius - mArrowWidth, rect.bottom - mCornersRadius,
-                rect.right - mArrowWidth - strokeWidth, rect.bottom - strokeWidth), 0, 90);
-        path.lineTo(rect.left + mArrowWidth + strokeWidth, rect.bottom - strokeWidth);
-
-        path.arcTo(new RectF(rect.left + strokeWidth, rect.bottom - mCornersRadius,
-                mCornersRadius + rect.left, rect.bottom - strokeWidth), 90, 90);
-
-        path.arcTo(new RectF(rect.left + strokeWidth, rect.top + strokeWidth, mCornersRadius
-                + rect.left, mCornersRadius + rect.top), 180, 90);
-        path.close();
-    }
-
-    private void initRightSquarePath(RectF rect, Path path, float strokeWidth) {
-
-        path.moveTo(rect.left + strokeWidth, rect.top + strokeWidth);
-        path.lineTo(rect.width() - mArrowWidth - strokeWidth, rect.top + strokeWidth);
-
-        path.lineTo(rect.right - mArrowWidth - strokeWidth, mArrowPosition + (strokeWidth / 2));
-        path.lineTo(rect.right - strokeWidth - strokeWidth, mArrowPosition + mArrowHeight / 2);
-        path.lineTo(rect.right - mArrowWidth - strokeWidth, mArrowPosition + mArrowHeight - (strokeWidth / 2));
-
-        path.lineTo(rect.right - mArrowWidth - strokeWidth, rect.bottom - strokeWidth);
-
-        path.lineTo(rect.left + strokeWidth, rect.bottom - strokeWidth);
-        path.lineTo(rect.left + strokeWidth, rect.top + strokeWidth);
-
-        path.close();
-    }
-
-
-    private void initBottomRoundedPath(RectF rect, Path path, float strokeWidth) {
-
-        path.moveTo(rect.left + mCornersRadius + strokeWidth, rect.top + strokeWidth);
-        path.lineTo(rect.width() - mCornersRadius - strokeWidth, rect.top + strokeWidth);
-        path.arcTo(new RectF(rect.right - mCornersRadius,
-                rect.top + strokeWidth, rect.right - strokeWidth, mCornersRadius + rect.top), 270, 90);
-
-        path.lineTo(rect.right - strokeWidth, rect.bottom - mArrowHeight - mCornersRadius - strokeWidth);
-        path.arcTo(new RectF(rect.right - mCornersRadius, rect.bottom - mCornersRadius - mArrowHeight,
-                rect.right - strokeWidth, rect.bottom - mArrowHeight - strokeWidth), 0, 90);
-
-        path.lineTo(rect.left + mArrowWidth + mArrowPosition - (strokeWidth / 2), rect.bottom - mArrowHeight - strokeWidth);
-        path.lineTo(rect.left + mArrowPosition + mArrowWidth / 2, rect.bottom - strokeWidth - strokeWidth);
-        path.lineTo(rect.left + mArrowPosition + (strokeWidth / 2), rect.bottom - mArrowHeight - strokeWidth);
-        path.lineTo(rect.left + Math.min(mCornersRadius, mArrowPosition) + strokeWidth, rect.bottom - mArrowHeight - strokeWidth);
-
-        path.arcTo(new RectF(rect.left + strokeWidth, rect.bottom - mCornersRadius - mArrowHeight,
-                mCornersRadius + rect.left, rect.bottom - mArrowHeight - strokeWidth), 90, 90);
-        path.lineTo(rect.left + strokeWidth, rect.top + mCornersRadius + strokeWidth);
-        path.arcTo(new RectF(rect.left + strokeWidth, rect.top + strokeWidth, mCornersRadius
-                + rect.left, mCornersRadius + rect.top), 180, 90);
-        path.close();
-    }
-
-    private void initBottomSquarePath(RectF rect, Path path, float strokeWidth) {
-
-        path.moveTo(rect.left + strokeWidth, rect.top + strokeWidth);
-        path.lineTo(rect.right - strokeWidth, rect.top + strokeWidth);
-        path.lineTo(rect.right - strokeWidth, rect.bottom - mArrowHeight - strokeWidth);
-
-
-        path.lineTo(rect.left + mArrowWidth + mArrowPosition - (strokeWidth / 2), rect.bottom - mArrowHeight - strokeWidth);
-        path.lineTo(rect.left + mArrowPosition + mArrowWidth / 2, rect.bottom - strokeWidth - strokeWidth);
-        path.lineTo(rect.left + mArrowPosition + (strokeWidth / 2), rect.bottom - mArrowHeight - strokeWidth);
-        path.lineTo(rect.left + mArrowPosition + strokeWidth, rect.bottom - mArrowHeight - strokeWidth);
-
-
-        path.lineTo(rect.left + strokeWidth, rect.bottom - mArrowHeight - strokeWidth);
-        path.lineTo(rect.left + strokeWidth, rect.top + strokeWidth);
-        path.close();
-    }
-
+    path.arcTo(new RectF(rect.right - cornersRadius - arrowWidth, rect.bottom - cornersRadius,
+        rect.right - arrowWidth - strokeWidth, rect.bottom - strokeWidth), 0, 90);
+    path.lineTo(rect.left + arrowWidth + strokeWidth, rect.bottom - strokeWidth);
+
+    path.arcTo(new RectF(rect.left + strokeWidth, rect.bottom - cornersRadius,
+        cornersRadius + rect.left, rect.bottom - strokeWidth), 90, 90);
+
+    path.arcTo(new RectF(rect.left + strokeWidth, rect.top + strokeWidth, cornersRadius
+        + rect.left, cornersRadius + rect.top), 180, 90);
+    path.close();
+  }
+
+  private void initRightSquarePath(RectF rect, Path path, float strokeWidth) {
+    path.moveTo(rect.left + strokeWidth, rect.top + strokeWidth);
+    path.lineTo(rect.width() - arrowWidth - strokeWidth, rect.top + strokeWidth);
+
+    path.lineTo(rect.right - arrowWidth - strokeWidth, arrowPosition + (strokeWidth / 2));
+    path.lineTo(rect.right - strokeWidth - strokeWidth, arrowPosition + arrowHeight / 2);
+    path.lineTo(rect.right - arrowWidth - strokeWidth, arrowPosition + arrowHeight - (strokeWidth / 2));
+
+    path.lineTo(rect.right - arrowWidth - strokeWidth, rect.bottom - strokeWidth);
+
+    path.lineTo(rect.left + strokeWidth, rect.bottom - strokeWidth);
+    path.lineTo(rect.left + strokeWidth, rect.top + strokeWidth);
+
+    path.close();
+  }
+
+  private void initBottomRoundedPath(RectF rect, Path path, float strokeWidth) {
+    path.moveTo(rect.left + cornersRadius + strokeWidth, rect.top + strokeWidth);
+    path.lineTo(rect.width() - cornersRadius - strokeWidth, rect.top + strokeWidth);
+    path.arcTo(new RectF(rect.right - cornersRadius,
+        rect.top + strokeWidth, rect.right - strokeWidth, cornersRadius + rect.top), 270, 90);
+
+    path.lineTo(rect.right - strokeWidth, rect.bottom - arrowHeight - cornersRadius - strokeWidth);
+    path.arcTo(new RectF(rect.right - cornersRadius, rect.bottom - cornersRadius - arrowHeight,
+        rect.right - strokeWidth, rect.bottom - arrowHeight - strokeWidth), 0, 90);
+
+    path.lineTo(rect.left + arrowWidth + arrowPosition - (strokeWidth / 2), rect.bottom - arrowHeight - strokeWidth);
+    path.lineTo(rect.left + arrowPosition + arrowWidth / 2, rect.bottom - strokeWidth - strokeWidth);
+    path.lineTo(rect.left + arrowPosition + (strokeWidth / 2), rect.bottom - arrowHeight - strokeWidth);
+    path.lineTo(rect.left + Math.min(cornersRadius, arrowPosition) + strokeWidth, rect.bottom - arrowHeight - strokeWidth);
+
+    path.arcTo(new RectF(rect.left + strokeWidth, rect.bottom - cornersRadius - arrowHeight,
+        cornersRadius + rect.left, rect.bottom - arrowHeight - strokeWidth), 90, 90);
+    path.lineTo(rect.left + strokeWidth, rect.top + cornersRadius + strokeWidth);
+    path.arcTo(new RectF(rect.left + strokeWidth, rect.top + strokeWidth, cornersRadius
+        + rect.left, cornersRadius + rect.top), 180, 90);
+    path.close();
+  }
+
+  private void initBottomSquarePath(RectF rect, Path path, float strokeWidth) {
+    path.moveTo(rect.left + strokeWidth, rect.top + strokeWidth);
+    path.lineTo(rect.right - strokeWidth, rect.top + strokeWidth);
+    path.lineTo(rect.right - strokeWidth, rect.bottom - arrowHeight - strokeWidth);
+
+    path.lineTo(rect.left + arrowWidth + arrowPosition - (strokeWidth / 2), rect.bottom - arrowHeight - strokeWidth);
+    path.lineTo(rect.left + arrowPosition + arrowWidth / 2, rect.bottom - strokeWidth - strokeWidth);
+    path.lineTo(rect.left + arrowPosition + (strokeWidth / 2), rect.bottom - arrowHeight - strokeWidth);
+    path.lineTo(rect.left + arrowPosition + strokeWidth, rect.bottom - arrowHeight - strokeWidth);
+
+    path.lineTo(rect.left + strokeWidth, rect.bottom - arrowHeight - strokeWidth);
+    path.lineTo(rect.left + strokeWidth, rect.top + strokeWidth);
+    path.close();
+  }
 }
